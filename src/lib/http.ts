@@ -7,22 +7,22 @@ type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string;
 };
 
-class HttpError extends Error {
+export class HttpError extends Error {
   status: number;
-  data: any;
+  payload: any;
 
   constructor({
     status,
-    data,
+    payload,
     message = "Lỗi HTTP!",
   }: {
     status: number;
-    data: any;
+    payload: any;
     message?: string;
   }) {
     super(message);
     this.status = status;
-    this.data = data;
+    this.payload = payload;
   }
 }
 
@@ -57,19 +57,22 @@ const request = async <Response>(
     body,
   });
 
-  const data: Response = await res.json();
+  const payload: Response = await res.json();
 
-  const payload = {
+  const data = {
     status: res.status,
-    data,
+    payload,
   };
 
   // Xử lý lỗi
   if (!res.ok) {
-    throw new HttpError(payload);
+    throw new HttpError({
+      status: res.status,
+      payload,
+    });
   }
 
-  return payload;
+  return data;
   // Xử lý khi response thành công
 };
 
