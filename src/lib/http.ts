@@ -86,8 +86,6 @@ const request = async <Response>(
     }
   }
 
-  console.log(baseHeaders);
-
   const body = options?.body ? JSON.stringify(options.body) : undefined;
 
   const res = await fetch(fullUrl, {

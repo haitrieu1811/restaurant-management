@@ -1,4 +1,11 @@
 "use client";
+
+import { useMutation, useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React from "react";
+
+import accountApiRequest from "@/apiRequests/account";
 import authApiRequest from "@/apiRequests/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,14 +18,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-const account = {
-  name: "Nguyễn Văn A",
-  avatar: "https://i.pravatar.cc/150",
-};
 
 export default function DropdownAvatar() {
   const router = useRouter();
@@ -35,6 +34,16 @@ export default function DropdownAvatar() {
     },
   });
 
+  const getMeQuery = useQuery({
+    queryKey: ["get-me"],
+    queryFn: () => accountApiRequest.getMe(),
+  });
+
+  const account = React.useMemo(
+    () => getMeQuery.data?.payload.data,
+    [getMeQuery.data?.payload.data]
+  );
+
   const handleLogout = () => {
     logoutMutation.mutate();
   };
@@ -48,15 +57,18 @@ export default function DropdownAvatar() {
           className="overflow-hidden rounded-full"
         >
           <Avatar>
-            <AvatarImage src={account.avatar ?? undefined} alt={account.name} />
+            <AvatarImage
+              src={account?.avatar ?? undefined}
+              alt={account?.name}
+            />
             <AvatarFallback>
-              {account.name.slice(0, 2).toUpperCase()}
+              {account?.name.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{account.name}</DropdownMenuLabel>
+        <DropdownMenuLabel>{account?.name}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href={"/manage/setting"} className="cursor-pointer">
