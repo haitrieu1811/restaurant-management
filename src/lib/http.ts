@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import envConfig from "@/config";
-import { isBrowser, normalizePath } from "@/lib/utils";
+import { getAccessTokenFromLS, isBrowser, normalizePath } from "@/lib/utils";
 import { LoginResType } from "@/schemaValidations/auth.schema";
 
 const ENTITY_ERROR_STATUS = 422;
@@ -79,6 +79,15 @@ const request = async <Response>(
           "Content-Type": "application/json",
         };
 
+  if (isBrowser) {
+    const accessToken = getAccessTokenFromLS();
+    if (accessToken) {
+      baseHeaders.Authorization = `Bearer ${accessToken}`;
+    }
+  }
+
+  console.log(baseHeaders);
+
   const body = options?.body ? JSON.stringify(options.body) : undefined;
 
   const res = await fetch(fullUrl, {
@@ -113,10 +122,14 @@ const request = async <Response>(
 
   // Xử lý khi thành công
   if (isBrowser) {
-    if (normalizePath(path) === "api/auth/login") {
+    const normalizedPath = normalizePath(path);
+    if (normalizedPath === "api/auth/login") {
       const { accessToken, refreshToken } = (payload as LoginResType).data;
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
+    } else if (normalizedPath === "api/auth/logout") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
     }
   }
 
