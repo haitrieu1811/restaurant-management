@@ -7,7 +7,9 @@ const authApiRequest = {
   },
 
   login(body: LoginBodyType) {
-    return http.post<LoginResType>("/api/auth/login", body);
+    return http.post<LoginResType>("/api/auth/login", body, {
+      baseUrl: "",
+    });
   },
 } as const;
 

@@ -3,6 +3,9 @@
 import envConfig from "@/config";
 import { normalizePath } from "@/lib/utils";
 
+const ENTITY_ERROR_STATUS = 422;
+const UNAUTHORIZED_ERROR_STATUS = 401;
+
 type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string;
 };
@@ -21,6 +24,36 @@ export class HttpError extends Error {
     message?: string;
   }) {
     super(message);
+    this.status = status;
+    this.payload = payload;
+  }
+}
+
+type EntityErrorPayload = {
+  message: string;
+  statusCode: number;
+  errors: {
+    field: string;
+    message: string;
+  }[];
+};
+
+export class EntityError extends HttpError {
+  status: typeof ENTITY_ERROR_STATUS;
+  payload: EntityErrorPayload;
+
+  constructor({
+    status,
+    payload,
+  }: {
+    status: typeof ENTITY_ERROR_STATUS;
+    payload: EntityErrorPayload;
+  }) {
+    super({
+      message: "Lỗi thực thể",
+      status,
+      payload,
+    });
     this.status = status;
     this.payload = payload;
   }
@@ -66,10 +99,16 @@ const request = async <Response>(
 
   // Xử lý lỗi
   if (!res.ok) {
-    throw new HttpError({
-      status: res.status,
-      payload,
-    });
+    if (res.status === ENTITY_ERROR_STATUS) {
+      throw new EntityError(
+        data as {
+          status: typeof ENTITY_ERROR_STATUS;
+          payload: EntityErrorPayload;
+        }
+      );
+    } else {
+      throw new HttpError(data);
+    }
   }
 
   return data;
