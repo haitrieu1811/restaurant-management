@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import envConfig from "@/config";
-import { normalizePath } from "@/lib/utils";
+import { isBrowser, normalizePath } from "@/lib/utils";
+import { LoginResType } from "@/schemaValidations/auth.schema";
 
 const ENTITY_ERROR_STATUS = 422;
-const UNAUTHORIZED_ERROR_STATUS = 401;
 
 type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string;
@@ -111,8 +111,16 @@ const request = async <Response>(
     }
   }
 
+  // Xử lý khi thành công
+  if (isBrowser) {
+    if (normalizePath(path) === "api/auth/login") {
+      const { accessToken, refreshToken } = (payload as LoginResType).data;
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+    }
+  }
+
   return data;
-  // Xử lý khi response thành công
 };
 
 const http = {

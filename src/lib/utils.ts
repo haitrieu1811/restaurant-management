@@ -56,3 +56,11 @@ export const handleErrorApi = ({
     });
   }
 };
+
+export const isBrowser = typeof window !== "undefined";
+
+export const getAccessTokenFromLS = () =>
+  isBrowser ? localStorage.getItem("accessToken") : null;
+
+export const getRefreshTokenFromLS = () =>
+  isBrowser ? localStorage.getItem("refreshToken") : null;
